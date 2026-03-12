@@ -77,7 +77,9 @@ def generate_mask(
     return mask
 
 
-def generate_intensities(sc: config.SimulationConfig, mask: np.ndarray, cutoff_factor: float = 6.0) -> list:
+def generate_intensities(
+    sc: config.SimulationConfig, mask: np.ndarray, cutoff_factor: float = 6.0
+) -> list:
     """
     Generate intensity maps for all defocus values and polarizations.
 
@@ -100,8 +102,12 @@ def generate_intensities(sc: config.SimulationConfig, mask: np.ndarray, cutoff_f
     results = []
     for defocus in sc.defocus_list:
         # Compute intensity for each polarization
-        int_x = intensity.compute_intensity_from_efields(sc, efield_x, defocus, cutoff_factor)
-        int_y = intensity.compute_intensity_from_efields(sc, efield_y, defocus, cutoff_factor)
+        int_x = intensity.compute_intensity_from_efields(
+            sc, efield_x, defocus, cutoff_factor
+        )
+        int_y = intensity.compute_intensity_from_efields(
+            sc, efield_y, defocus, cutoff_factor
+        )
         int_unpolar = (int_x + int_y) / 2.0
 
         results.append((defocus, int_x, int_y, int_unpolar))

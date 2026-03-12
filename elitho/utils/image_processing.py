@@ -1,10 +1,9 @@
-# import cupy as cp
 import numpy as np
+from elitho.utils.backend import get_array_module
 
 
 def refine(mask: "xp.ndarray", scale_x: int, scale_y: int) -> "xp.ndarray":
-    # xp = cp.get_array_module(mask)
-    xp = np
+    xp = get_array_module(mask)
     refined_pattern = xp.kron(mask, xp.ones((scale_x, scale_y)))
     return refined_pattern
 

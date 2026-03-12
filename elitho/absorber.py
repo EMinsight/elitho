@@ -1,7 +1,5 @@
-# import cupy as cp
-import numpy as np
 from elitho import config
-from elitho.utils.mat_utils import linalg_eig
+from elitho.utils.backend import get_array_module
 
 
 def calc_sigma(
@@ -47,8 +45,7 @@ def absorber(
     U2U: "xp.ndarray",
     U2B: "xp.ndarray",
 ):
-    # xp = cp.get_array_module(kxplus)
-    xp = np
+    xp = get_array_module(kxplus)
     l = (
         doc.valid_x_coords[:, None]
         - doc.valid_x_coords[None, :]
@@ -71,8 +68,7 @@ def absorber(
     ] -= kxy2
 
     # eigenvalues and eigenvectors
-    # w, br1 = xp.linalg.eig(D) # cupy is not compatible with linalg_eig
-    w, br1 = linalg_eig(D)
+    w, br1 = xp.linalg.eig(D)
     al1 = xp.sqrt(w)
     Cjp = xp.linalg.solve(br1, br2)  # Cjp = np.linalg.inv(br1) @ br2
     new_sigma = calc_sigma(polar, dod, doc, kxplus, kyplus, sigma)

@@ -4,6 +4,7 @@ from __future__ import annotations
 import numpy as np
 from elitho import descriptors
 from elitho.utils import image_processing as ip
+from elitho.utils.backend import get_array_module
 
 
 def mask(
@@ -15,8 +16,7 @@ def mask(
     refinement_factor_x: int = 1,
     refinement_factor_y: int = 1,
 ) -> "xp.ndarray":
-    # xp = cp.get_array_module(mask_pattern)
-    xp = np
+    xp = get_array_module(mask_pattern)
     # refine mask pattern
     refined_mask = ip.refine(mask_pattern, refinement_factor_x, refinement_factor_y)
     # create amplitude pattern
@@ -38,8 +38,7 @@ def coefficients(
     dielectric_constants: list[complex],
     dod: descriptors.DiffractionOrderDescriptor,
 ) -> tuple["xp.ndarray", "xp.ndarray", "xp.ndarray", "xp.ndarray"]:
-    # xp = cp.get_array_module(mask_pattern)
-    xp = np
+    xp = get_array_module(mask_pattern)
 
     mask_width, mask_height = mask_pattern.shape
 

@@ -1,11 +1,11 @@
 # import cupy as cp
 import numpy as np
 from elitho import config
+from elitho.utils.backend import get_array_module
 
 
 def diag_mat(vals: "xp.ndarray") -> "sparse.csr_matrix":
-    # xp = cp.get_array_module(vals)
-    xp = np
+    xp = get_array_module(vals)
     if xp == np:
         from scipy import sparse
     else:
@@ -27,8 +27,7 @@ def transfer_matrix(
 ) -> tuple[
     "sparse.csr_matrix", "sparse.csr_matrix", "sparse.csr_matrix", "sparse.csr_matrix"
 ]:
-    # xp = cp.get_array_module(kxplus)
-    xp = np
+    xp = get_array_module(kxplus)
     # identity diag Triplet (Cjp) -> all ones
     Cjp_vals = xp.ones(num_valid_diffraction_orders, dtype=xp.complex128)
 
@@ -67,8 +66,7 @@ def multilayer_transfer_matrix(
     kxy2: "xp.ndarray",
 ) -> tuple["sparse.csr_matrix", "sparse.csr_matrix"]:
 
-    # xp = cp.get_array_module(kxplus)
-    xp = np
+    xp = get_array_module(kxplus)
     # compute per-mode propagation constants (complex)
     alpha_sio2 = xp.sqrt(k * k * config.epsilon_si_o2 - kxy2)
     alpha_mo = xp.sqrt(k * k * config.epsilon_mo - kxy2)

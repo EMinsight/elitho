@@ -1,36 +1,36 @@
-import numpy as np
 from elitho import config
+from elitho.utils.backend import get_array_module
 
 
-def polarization_rotation(k, MX, MY, px, py, sx0, sy0) -> np.ndarray:
-    s0 = np.array([sx0, sy0, -np.sqrt(k**2 - sx0**2 - sy0**2)])
-    p = np.array([px, py, 0.0])
-    pp = np.array([MX * px, MY * py, -np.sqrt(k**2 - (MX * px) ** 2 - (MY * py) ** 2)])
-    ez = np.array([0.0, 0.0, 1.0])
-    ezp = np.array([0.0, 0.0, 1.0])
+def polarization_rotation(k, MX, MY, px, py, sx0, sy0, xp):
+    s0 = xp.array([sx0, sy0, -xp.sqrt(k**2 - sx0**2 - sy0**2)])
+    p = xp.array([px, py, 0.0])
+    pp = xp.array([MX * px, MY * py, -xp.sqrt(k**2 - (MX * px) ** 2 - (MY * py) ** 2)])
+    ez = xp.array([0.0, 0.0, 1.0])
+    ezp = xp.array([0.0, 0.0, 1.0])
     eps = 1e-5
 
     if (px**2 + py**2) > eps:
-        es = np.cross(p, s0)
-        es = es / np.linalg.norm(es)
-        esp = np.cross(pp, ezp)
-        esp = esp / np.linalg.norm(esp)
+        es = xp.cross(p, s0)
+        es = es / xp.linalg.norm(es)
+        esp = xp.cross(pp, ezp)
+        esp = esp / xp.linalg.norm(esp)
 
         ps0 = p + s0
-        ps0 = ps0 / np.linalg.norm(ps0)
+        ps0 = ps0 / xp.linalg.norm(ps0)
 
-        em = np.cross(es, ps0)
-        emp = np.cross(esp, pp) / k
+        em = xp.cross(es, ps0)
+        emp = xp.cross(esp, pp) / k
 
     else:
-        es = np.cross(ez, s0)
-        es = es / np.linalg.norm(es)
+        es = xp.cross(ez, s0)
+        es = es / xp.linalg.norm(es)
         esp = -es
-        em = np.cross(es, s0) / k
-        emp = np.cross(esp, -ezp)
+        em = xp.cross(es, s0) / k
+        emp = xp.cross(esp, -ezp)
 
-    R = np.zeros((3, 2))
-    scale = np.sqrt(k / abs(pp[2]))
+    R = xp.zeros((3, 2))
+    scale = xp.sqrt(k / abs(pp[2]))
 
     for i in range(3):
         for j in range(2):
@@ -39,7 +39,7 @@ def polarization_rotation(k, MX, MY, px, py, sx0, sy0) -> np.ndarray:
     return R
 
 
-def high_na_electro_field(sc, nsx, nsy, Ax_val, Ay_val, linput, minput, l0s, m0s):
+def high_na_electro_field(sc, nsx, nsy, Ax_val, Ay_val, linput, minput, l0s, m0s, xp):
     kxn = sc.dkx * (nsx / sc.ndivX) + sc.dkx * l0s + sc.dkx * linput
     kyn = sc.dky * (nsy / sc.ndivY) + sc.dky * m0s + sc.dky * minput
     EAx = 0.0
@@ -53,7 +53,7 @@ def high_na_electro_field(sc, nsx, nsy, Ax_val, Ay_val, linput, minput, l0s, m0s
         ]
     ):
         R = polarization_rotation(
-            sc.k, sc.magnification_x, sc.magnification_y, kxn, kyn, sc.kx0, sc.ky0
+            sc.k, sc.magnification_x, sc.magnification_y, kxn, kyn, sc.kx0, sc.ky0, xp
         )
         EAx = 1j * sc.k * (R[0, 0] * Ax_val + R[0, 1] * Ay_val)
         EAy = 1j * sc.k * (R[1, 0] * Ax_val + R[1, 1] * Ay_val)
@@ -61,9 +61,9 @@ def high_na_electro_field(sc, nsx, nsy, Ax_val, Ay_val, linput, minput, l0s, m0s
     return EAx, EAy, EAz
 
 
-def standard_na_electro_field(sc, kxplus, kyplus, Ax_val, Ay_val):
+def standard_na_electro_field(sc, kxplus, kyplus, Ax_val, Ay_val, xp):
     kxy2 = kxplus**2 + kyplus**2
-    klm = np.sqrt(sc.k**2 - kxy2)
+    klm = xp.sqrt(sc.k**2 - kxy2)
     EAx = 1j * sc.k * Ax_val - 1j / sc.k * (
         kxplus**2 * Ax_val + kxplus * kyplus * Ay_val
     )
@@ -80,17 +80,19 @@ def electro_field(
     is_high_na: bool,
     nsx: int,
     nsy: int,
-    SDIV: np.ndarray,
-    l0s: np.ndarray,
-    m0s: np.ndarray,
+    SDIV: int,
+    l0s: "xp.ndarray",
+    m0s: "xp.ndarray",
     sx0: float,
     sy0: float,
     pupil_coords: "pupil.PupilCoordinates",
-    ampxx: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    Ex0m = np.zeros((SDIV, pupil_coords.n_coordinates), dtype=complex)
-    Ey0m = np.zeros_like(Ex0m)
-    Ez0m = np.zeros_like(Ex0m)
+    ampxx: "xp.ndarray",
+) -> tuple["xp.ndarray", "xp.ndarray", "xp.ndarray"]:
+    xp = get_array_module(ampxx)
+
+    Ex0m = xp.zeros((SDIV, pupil_coords.n_coordinates), dtype=complex)
+    Ey0m = xp.zeros_like(Ex0m)
+    Ez0m = xp.zeros_like(Ex0m)
 
     for isd in range(SDIV):
         kx = sx0 + sc.dkx * l0s[isd]
@@ -102,11 +104,11 @@ def electro_field(
             jp = pupil_coords.minput[i] + sc.lpmaxY
 
             if polar == config.PolarizationDirection.X:
-                Ax_val = ampxx[ls, ms, ip, jp] / np.sqrt(sc.k**2 - kx**2)
+                Ax_val = ampxx[ls, ms, ip, jp] / xp.sqrt(sc.k**2 - kx**2)
                 Ay_val = 0
             elif polar == config.PolarizationDirection.Y:
                 Ax_val = 0
-                Ay_val = ampxx[ls, ms, ip, jp] / np.sqrt(sc.k**2 - ky**2)
+                Ay_val = ampxx[ls, ms, ip, jp] / xp.sqrt(sc.k**2 - ky**2)
             else:
                 raise ValueError("polar must be 'X' or 'Y'")
 
@@ -121,12 +123,13 @@ def electro_field(
                     pupil_coords.minput[i],
                     l0s[isd],
                     m0s[isd],
+                    xp,
                 )
             else:
                 kxplus = kx + sc.dkx * pupil_coords.linput[i]
                 kyplus = ky + sc.dky * pupil_coords.minput[i]
                 EAx, EAy, EAz = standard_na_electro_field(
-                    sc, kxplus, kyplus, Ax_val, Ay_val
+                    sc, kxplus, kyplus, Ax_val, Ay_val, xp
                 )
 
             Ex0m[isd, i] = EAx

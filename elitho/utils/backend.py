@@ -1,20 +1,40 @@
-xp = None
+import os
+import numpy as np
 
 
-def use_backend(name: str):
-    global xp
-    if name == "numpy":
-        import numpy as np
+def get_array_module(arr):
+    """Get appropriate array module from array (Array-based Dispatch pattern).
 
-        xp = np
-    elif name == "cupy":
+    Args:
+        arr: numpy or cupy array
+
+    Returns:
+        numpy or cupy module
+    """
+    try:
         import cupy as cp
+        return cp.get_array_module(arr)
+    except ImportError:
+        return np
 
-        xp = cp
+
+def setup_backend(use_gpu=None):
+    """Setup backend and return appropriate module.
+
+    Args:
+        use_gpu: Explicitly specify True/False, or None to read USE_GPU env var
+
+    Returns:
+        numpy or cupy module
+    """
+    if use_gpu is None:
+        use_gpu = os.getenv('USE_GPU', '0') == '1'
+
+    if use_gpu:
+        try:
+            import cupy as cp
+            return cp
+        except ImportError:
+            return np
     else:
-        raise ValueError(f"Unknown backend: {name}")
-
-
-def get_backend():
-    global xp
-    return xp
+        return np

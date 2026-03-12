@@ -7,6 +7,19 @@
 *.npz
 *.csv
 
+# Experiments and development
+/experiments/
+/benchmarks/results/
+/benchmarks/*.json
+/benchmarks/*.csv
+/benchmarks/*.npy
+/scratch/
+/dev/
+
+# Performance profiling
+*.prof
+*.pstats
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
