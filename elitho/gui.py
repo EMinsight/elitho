@@ -350,10 +350,13 @@ def render_inputs():
             st.session_state["_prev_NA"] = float(NA)
 
     with c2:
+        if "magnification_x" not in st.session_state:
+            st.session_state["magnification_x"] = int(defaults.get("magnification_x", 4))
+        if "magnification_y" not in st.session_state:
+            st.session_state["magnification_y"] = int(defaults.get("magnification_y", 4))
         magnification_x = st.number_input(
             "X magnification",
             min_value=0,
-            value=int(defaults.get("magnification_x", 4)),
             step=1,
             format="%d",
             key="magnification_x",
@@ -361,7 +364,6 @@ def render_inputs():
         magnification_y = st.number_input(
             "Y magnification",
             min_value=0,
-            value=int(defaults.get("magnification_y", 4)),
             step=1,
             format="%d",
             key="magnification_y",
